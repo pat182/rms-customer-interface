@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@keyframes loading-bar {
+  from {
+    transform: translateX(-110%);
+  }
+
+  to {
+    transform: translateX(260%);
+  }
+}
+
+.loading-bar {
+  animation: loading-bar 1.4s ease-in-out infinite;
+}
+
+@keyframes cart-added-check {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-20deg);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.12) rotate(5deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+.cart-added-check {
+  animation: cart-added-check 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-bar {
+    animation-duration: 3s;
+  }
+
+  .cart-added-check {
+    animation: none;
+  }
+}
