@@ -14,22 +14,9 @@ import {
   getCartItemsApi,
   placeOrderApi,
 } from "../api/cartApi";
+import { ReceiptItem, ReceiptOrder } from "../types/orderTypes";
+import { connectCustomerWebSocket } from "../utils/websocket.ts";
 
-type ReceiptItem = {
-  id: number;
-  item_name: string;
-  unit_price: number;
-  quantity: number;
-  special_request: string | null;
-  subtotal: number;
-};
-
-type ReceiptOrder = {
-  id: number;
-  status: string;
-  items: ReceiptItem[];
-  subtotal: number;
-};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -147,11 +134,12 @@ export default function OrdersPage() {
   const [editQuantity, setEditQuantity] = useState(1);
   const [editRequest, setEditRequest] = useState("");
   const [swipeStartX, setSwipeStartX] = useState<number | null>(null);
+
   const total = items.reduce(
     (sum, item) => sum + item.unitPrice * item.quantity,
     0,
   );
-
+  
   async function saveItems(updatedItems: StoredCartItem[]) {
     if (!tableQr) {
       setActionError("A table QR code is required to update your orders.");
@@ -273,12 +261,12 @@ export default function OrdersPage() {
       setError("A table QR code is required to view your orders.");
       return;
     }
-
+    const tqr = tableQr
     let active = true;
 
     async function loadOrders() {
       try {
-        const response = await getCartItemsApi(tableQr);
+        const response = await getCartItemsApi(tqr);
         
         if (!response.ok) {
           throw new Error(`Unable to load your orders (${response.status}).`);
@@ -350,6 +338,33 @@ export default function OrdersPage() {
   }, [tableQr]);
 
   
+  const diningSessionToken = localStorage.getItem("diningSessionToken");
+
+  useEffect(() => {
+      if (!diningSessionToken) return;
+
+      const socket = connectCustomerWebSocket(
+          `order_status/${diningSessionToken}`,
+          (message) => {
+              if (message.event !== "order_status_updated") return;
+
+              const { order_id, status } = message.data;
+
+              setOrderSummary((currentOrders) =>
+                  currentOrders.map((order) =>
+                      order.id === order_id
+                          ? { ...order, status }
+                          : order
+                  )
+              );
+          }
+      );
+
+      return () => {
+          socket.close();
+      };
+  }, [diningSessionToken]);
+    
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50/70 via-stone-50 to-white">

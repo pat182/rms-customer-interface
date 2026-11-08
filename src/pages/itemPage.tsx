@@ -97,7 +97,8 @@ export default function ItemPage() {
 
         const response = await itemApi(Number(itemId), tableQr);
         if (!response.ok) {
-          throw new Error("Unable to load the menu item.");
+          const error = await response.json();
+          throw new Error(error.detail);
         }
 
         const result = await response.json();

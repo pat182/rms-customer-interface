@@ -21,3 +21,19 @@ export type OrderSummary = {
     }[];
     cart_items: StoredCartItem[];
 };
+
+export type ReceiptItem = {
+  id: number;
+  item_name: string;
+  unit_price: number;
+  quantity: number;
+  special_request: string | null;
+  subtotal: number;
+};
+
+export type ReceiptOrder = {
+  id: number;
+  status: string;
+  items: ReceiptItem[];
+  subtotal: number;
+};
