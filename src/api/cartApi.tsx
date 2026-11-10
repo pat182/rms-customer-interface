@@ -9,7 +9,7 @@ export async function addItemToCartApi(
         throw new Error("A table QR code is required to update the cart.");
     }
 
-    return fetch(`${API_URL}/customer/socket/${encodeURIComponent(tableQr)}/cart/${localStorage.getItem('diningSessionToken')}`, {
+    return fetch(`${API_URL}/customer/tables/${encodeURIComponent(tableQr)}/cart/${localStorage.getItem('diningSessionToken')}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
