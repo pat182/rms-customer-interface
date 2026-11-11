@@ -34,6 +34,7 @@ export type ReceiptItem = {
 export type ReceiptOrder = {
   id: number;
   status: string;
+  cancel_reason: string | null;
   items: ReceiptItem[];
   subtotal: number;
 };

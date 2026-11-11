@@ -47,3 +47,21 @@ export async function placeOrderApi(
         body: JSON.stringify(cartItems),
     })
 }
+
+export async function cancelCustomerOrder(
+    tableQr:string,
+    orderId:number
+){
+    return fetch(
+        `${API_URL}/customer/tables/${encodeURIComponent(tableQr)}/orders/${localStorage.getItem('diningSessionToken')}/cancel/${orderId}`, 
+        {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        }
+    )
+}
+

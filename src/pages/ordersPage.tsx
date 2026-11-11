@@ -8,9 +8,11 @@ import {
   X,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import ConfirmationModal from "../components/global/confirmationModal";
 import type { StoredCartItem } from "../types/globals";
 import {
   addItemToCartApi,
+  cancelCustomerOrder,
   getCartItemsApi,
   placeOrderApi,
 } from "../api/cartApi";
@@ -84,6 +86,8 @@ function parseReceiptOrder(value: unknown): ReceiptOrder | null {
   return {
     id,
     status: value.status,
+    cancel_reason:
+      typeof value.cancel_reason === "string" ? value.cancel_reason : null,
     subtotal,
     items,
   };
@@ -104,6 +108,37 @@ function parseReceiptOrders(value: unknown): ReceiptOrder[] {
 
     return [];
   });
+}
+
+function getOrderStatusDisplay(status: string) {
+  switch (status.trim().toLowerCase()) {
+    case "pending":
+      return {
+        label: "In the queue",
+        className: "border-amber-200 bg-amber-50 text-amber-800",
+      };
+    case "preparing":
+      return {
+        label: "Preparing",
+        className: "border-blue-200 bg-blue-50 text-blue-800",
+      };
+    case "served":
+      return {
+        label: "Served",
+        className: "border-green-200 bg-green-50 text-green-800",
+      };
+    case "canceled":
+    case "cancelled":
+      return {
+        label: "Canceled",
+        className: "border-red-200 bg-red-50 text-red-800",
+      };
+    default:
+      return {
+        label: status,
+        className: "border-stone-200 bg-stone-50 text-stone-700",
+      };
+  }
 }
 
 function isOrderItem(value: unknown): value is StoredCartItem {
@@ -129,6 +164,8 @@ export default function OrdersPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
+  const [orderToCancel, setOrderToCancel] = useState<number | null>(null);
   const [openItemIndex, setOpenItemIndex] = useState<number | null>(null);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
   const [editQuantity, setEditQuantity] = useState(1);
@@ -256,6 +293,44 @@ export default function OrdersPage() {
     }
   }
 
+  async function cancelOrder(orderId: number) {
+    if (!tableQr) {
+      setActionError("A table QR code is required to cancel your order.");
+      return;
+    }
+
+    if (cancellingOrderId !== null) return;
+
+    setCancellingOrderId(orderId);
+    setActionError(null);
+    setOrderSuccess(null);
+
+    try {
+      const response = await cancelCustomerOrder(tableQr, orderId);
+
+      if (!response.ok) {
+        throw new Error(`Unable to cancel your order (${response.status}).`);
+      }
+
+      setOrderSummary((orders) =>
+        orders.map((order) =>
+          order.id === orderId ? { ...order, status: "canceled" } : order,
+        ),
+      );
+      setOrderToCancel(null);
+      setOrderSuccess(`Order #${orderId} has been canceled.`);
+    } catch (cancelError) {
+      setActionError(
+        cancelError instanceof Error
+          ? cancelError.message
+          : "Unable to cancel your order.",
+      );
+    } finally {
+      setCancellingOrderId(null);
+      setOrderToCancel(null);
+    }
+  }
+
   useEffect(() => {
     if (!tableQr) {
       setError("A table QR code is required to view your orders.");
@@ -348,12 +423,19 @@ export default function OrdersPage() {
           (message) => {
               if (message.event !== "order_status_updated") return;
 
-              const { order_id, status } = message.data;
+              const { order_id, status, cancel_reason } = message.data;
 
               setOrderSummary((currentOrders) =>
                   currentOrders.map((order) =>
                       order.id === order_id
-                          ? { ...order, status }
+                          ? {
+                                ...order,
+                                status,
+                                cancel_reason:
+                                    typeof cancel_reason === "string"
+                                        ? cancel_reason
+                                        : order.cancel_reason,
+                            }
                           : order
                   )
               );
@@ -432,14 +514,14 @@ export default function OrdersPage() {
                       className="group overflow-hidden rounded-2xl border border-orange-200 bg-white shadow-sm"
                     >
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 bg-orange-50/80 px-5 py-4 marker:hidden focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange-600">
-                        <span>
+                        <span className="flex flex-col items-start gap-2">
                           <span className="block font-bold text-stone-900">
                             Order #{order.id}
                           </span>
-                          <span className="mt-1 block text-sm capitalize text-stone-600">
-                            {order.status.toLowerCase() === "pending"
-                              ? "In the queue"
-                              : order.status}
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getOrderStatusDisplay(order.status).className}`}
+                          >
+                            {getOrderStatusDisplay(order.status).label}
                           </span>
                         </span>
                         <span className="flex items-center gap-3">
@@ -456,6 +538,15 @@ export default function OrdersPage() {
                       </summary>
 
                       <div className="border-t border-dashed border-orange-200 px-5 py-4">
+                        {["canceled", "cancelled"].includes(
+                          order.status.trim().toLowerCase(),
+                        ) &&
+                          order.cancel_reason && (
+                            <p className="mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800">
+                              <span className="font-semibold">Cancel reason: </span>
+                              {order.cancel_reason}
+                            </p>
+                          )}
                         <ul className="space-y-4">
                           {order.items.map((item) => (
                             <li
@@ -491,9 +582,9 @@ export default function OrdersPage() {
                         {order.status.toLowerCase() === "pending" && (
                           <button
                             type="button"
-                            disabled
-                            title="Order cancellation is not connected yet."
-                            className="mt-4 w-full cursor-not-allowed rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-400"
+                            onClick={() => setOrderToCancel(order.id)}
+                            disabled={cancellingOrderId !== null}
+                            className="mt-4 w-full rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             Cancel order
                           </button>
@@ -704,6 +795,22 @@ export default function OrdersPage() {
           </button>
         )}
       </main>
+      <ConfirmationModal
+        open={orderToCancel !== null}
+        title="Cancel this order?"
+        message={
+          orderToCancel === null
+            ? ""
+            : `Are you sure you want to cancel order #${orderToCancel}?`
+        }
+        confirmLabel="Yes, cancel order"
+        variant="danger"
+        isConfirming={cancellingOrderId !== null}
+        onConfirm={() => {
+          if (orderToCancel !== null) void cancelOrder(orderToCancel);
+        }}
+        onCancel={() => setOrderToCancel(null)}
+      />
     </div>
   );
 }
