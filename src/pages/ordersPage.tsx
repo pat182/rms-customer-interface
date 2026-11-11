@@ -431,10 +431,7 @@ export default function OrdersPage() {
                           ? {
                                 ...order,
                                 status,
-                                cancel_reason:
-                                    typeof cancel_reason === "string"
-                                        ? cancel_reason
-                                        : order.cancel_reason,
+                                cancel_reason:typeof cancel_reason === "string" ? cancel_reason : order.cancel_reason,
                             }
                           : order
                   )
