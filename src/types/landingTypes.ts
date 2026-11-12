@@ -15,6 +15,8 @@ export type MenuCategory = {
 
 export type LandingData = {
   restaurant_name: string;
+  is_new : boolean;
+  is_owner :boolean;
   menu: {
     menu_name: string;
     description: string;
