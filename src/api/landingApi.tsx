@@ -1,6 +1,5 @@
 import { API_URL } from '../config'
-
-export async function getLandingData(tabQr: string, deviceToken: string) {
+export async function getLandingData(tabQr: string, deviceToken: string, seshToken: string | null) {
 
     return fetch(`${API_URL}/customer/tables/${encodeURIComponent(tabQr)}`, {
         method: 'GET',
@@ -9,7 +8,7 @@ export async function getLandingData(tabQr: string, deviceToken: string) {
             Accept: 'application/json',
             'Content-Type': 'application/json',
             'X-DEVICE-TOKEN': deviceToken,
-            
+            "X-DINING-SESSION-TOKEN" : seshToken ?? ""
         },
     })
 }
@@ -17,7 +16,8 @@ export async function getLandingData(tabQr: string, deviceToken: string) {
 
 export async function requestToJoin(
     tabQr: string,
-    deviceToken: string
+    deviceToken: string,
+    seshToken: string | null
 ) {
     return fetch(
         `${API_URL}/customer/tables/${encodeURIComponent(tabQr)}/join-request`,
@@ -28,6 +28,7 @@ export async function requestToJoin(
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
                 'X-DEVICE-TOKEN': deviceToken,
+                "X-DINING-SESSION-TOKEN" : seshToken ?? ""
             },
         }
     );
@@ -37,7 +38,8 @@ export async function requestToJoin(
 export async function getJoinRequestStatus(
     tabQr: string,
     requestToken: string,
-    deviceToken: string
+    deviceToken: string,
+    seshToken: string | null
 ) {
     return fetch(
         `${API_URL}/customer/tables/${encodeURIComponent(tabQr)}/join-request/status/${encodeURIComponent(requestToken)}`,
@@ -47,6 +49,7 @@ export async function getJoinRequestStatus(
             headers: {
                 Accept: 'application/json',
                 'X-DEVICE-TOKEN': deviceToken,
+                "X-DINING-SESSION-TOKEN" : seshToken ?? ""
             },
         }
     );
@@ -57,7 +60,8 @@ export async function approveJoinRequest(
     tabQr: string,
     requestToken: string,
     deviceToken: string,
-    approved: boolean
+    approved: boolean,
+    seshToken : string | null
 ) {
     return fetch(
         `${API_URL}/customer/tables/${encodeURIComponent(tabQr)}/join-request/approval`,
@@ -68,6 +72,7 @@ export async function approveJoinRequest(
                 Accept: "application/json",
                 "Content-Type": "application/json",
                 "X-DEVICE-TOKEN": deviceToken,
+                "X-DINING-SESSION-TOKEN" : seshToken ?? ""
             },
             body: JSON.stringify({
                 request_token: requestToken,

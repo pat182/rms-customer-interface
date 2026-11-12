@@ -8,7 +8,8 @@ export default function MenuScreen(){
     const [error, setError] = useState<string | null>(null);
     const [landingData, setLandingData] = useState<LandingData | null>(null);
     const categoriesRef = useRef<HTMLDivElement>(null);
-   
+    
+    
 
     return {
         loading,
@@ -20,3 +21,4 @@ export default function MenuScreen(){
         categoriesRef,
     }
 }
+

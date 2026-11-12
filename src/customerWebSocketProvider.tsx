@@ -22,6 +22,7 @@ export default function CustomerWebSocketProvider() {
         let approvalSocket: WebSocket | null = null;
 
         function connectSocket() {
+            
             const sessionToken = localStorage.getItem("diningSessionToken");
 
             if (!sessionToken) {
@@ -90,7 +91,7 @@ export default function CustomerWebSocketProvider() {
 
     async function handleJoinRequestDecision(approved: boolean) {
         if (!tableQr || !joinRequestToken) return;
-
+        const sessionToken = localStorage.getItem("diningSessionToken");
         try {
             setApproving(true);
 
@@ -99,6 +100,7 @@ export default function CustomerWebSocketProvider() {
                 joinRequestToken,
                 getDeviceToken(),
                 approved,
+                sessionToken
             );
 
             const result = await response.json();

@@ -59,26 +59,28 @@ export default function MenuPage() {
         if (!tableQr) {
           throw new Error("Invalid table QR code.");
         }
-
+        
         const deviceToken = getDeviceToken();
 
-        const response = await getLandingData(tableQr, deviceToken);
+        let existingSessionToken = localStorage.getItem("diningSessionToken");
+
+        const response = await getLandingData(tableQr, deviceToken,existingSessionToken);
 
         if (!response.ok) {
           throw new Error("Unable to load the menu.");
         }
 
         const result = await response.json();
-
+        
         if (cancelled) return;
 
         const data = result.data;
-
+        
         setLandingData(data);
         setLoading(false);
 
-        if (data.dinning_session_token) {
-          // This device is the session owner.
+        if (data.is_owner) {
+          
           localStorage.setItem(
             "diningSessionToken",
             data.dinning_session_token,
@@ -91,14 +93,16 @@ export default function MenuPage() {
           return;
         }
 
-        // This device is a guest.
         localStorage.setItem("isDiningSessionOwner", "false");
 
-        // Check whether guest was already approved.
-        // Keep the existing token when returning to this page.
-        const existingSessionToken = localStorage.getItem("diningSessionToken");
-
-        if (existingSessionToken) {
+        if(data.dinning_session_token != localStorage.getItem("diningSessionToken")){
+            localStorage.setItem("diningSessionToken", data.dinning_session_token)
+            existingSessionToken = data.dinning_session_token;
+            
+        }
+        
+        
+        if (existingSessionToken && data.is_approved) {
           setJoinStatus("approved");
 
           window.dispatchEvent(new Event("dining-session-updated"));
@@ -106,8 +110,9 @@ export default function MenuPage() {
           return;
         }
 
-        // No approved session token exists, so request access.
-        const joinResponse = await requestToJoin(tableQr, deviceToken);
+
+
+        const joinResponse = await requestToJoin(tableQr, deviceToken,existingSessionToken);
 
         if (!joinResponse.ok) {
           throw new Error("Unable to request access to the dining session.");
@@ -115,7 +120,7 @@ export default function MenuPage() {
 
         const joinResult = await joinResponse.json();
         const requestToken = joinResult.data.request_token;
-
+        
         if (cancelled) return;
 
         setJoinStatus("pending");
@@ -153,6 +158,7 @@ export default function MenuPage() {
             }
           },
         );
+
       } catch (err) {
         if (!cancelled) {
           setError(
