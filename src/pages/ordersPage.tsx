@@ -270,7 +270,7 @@ export default function OrdersPage() {
     setOrderSuccess(null);
 
     try {
-      const response = await placeOrderApi(items, tableQr);
+      const response = await placeOrderApi(items, tableQr, localStorage.getItem("deviceToken"));
 
       if (!response.ok) {
         throw new Error(`Unable to place your order (${response.status}).`);
@@ -309,7 +309,7 @@ export default function OrdersPage() {
     setOrderSuccess(null);
 
     try {
-      const response = await cancelCustomerOrder(tableQr, orderId);
+      const response = await cancelCustomerOrder(tableQr, orderId,localStorage.getItem("deviveceToken"));
 
       if (!response.ok) {
         throw new Error(`Unable to cancel your order (${response.status}).`);

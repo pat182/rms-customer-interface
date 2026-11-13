@@ -120,7 +120,7 @@ export default function MenuPage() {
         
         const joinResult = await joinResponse.json();
         const requestToken = joinResult.data.request_token;
-        console.log(joinResult.data);
+        
         if (cancelled) return;
 
         setJoinStatus("pending");

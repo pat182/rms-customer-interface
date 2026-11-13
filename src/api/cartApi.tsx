@@ -39,7 +39,8 @@ export async function getCartItemsApi(
 
 export async function placeOrderApi(
     cartItems: StoredCartItem[],
-    tableQr:string
+    tableQr:string,
+    deviceToken:string | null
 ){
     return fetch(`${API_URL}/customer/tables/${encodeURIComponent(tableQr)}/orders/${localStorage.getItem('diningSessionToken')}`, {
         method: 'POST',
@@ -47,6 +48,7 @@ export async function placeOrderApi(
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
+            'X-DEVICE-TOKEN': deviceToken ?? ""
         },
         body: JSON.stringify(cartItems),
     })
@@ -54,7 +56,8 @@ export async function placeOrderApi(
 
 export async function cancelCustomerOrder(
     tableQr:string,
-    orderId:number
+    orderId:number,
+    deviceToken:string | null
 ){
     return fetch(
         `${API_URL}/customer/tables/${encodeURIComponent(tableQr)}/orders/${localStorage.getItem('diningSessionToken')}/cancel/${orderId}`, 
@@ -64,6 +67,7 @@ export async function cancelCustomerOrder(
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
+                'X-DEVICE-TOKEN': deviceToken ?? ""
             },
         }
     )
