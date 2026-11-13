@@ -3,32 +3,36 @@ import type {StoredCartItem} from "../types/globals"
 
 export async function addItemToCartApi(
     cartItems: StoredCartItem[],
-    tableQr: string | undefined
+    tableQr: string | undefined,
+    deviceToken : string | null
 ) {
     if (!tableQr) {
         throw new Error("A table QR code is required to update the cart.");
     }
-
+    
     return fetch(`${API_URL}/customer/tables/${encodeURIComponent(tableQr)}/cart/${localStorage.getItem('diningSessionToken')}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
+            'X-DEVICE-TOKEN': deviceToken ?? "",
         },
         body: JSON.stringify(cartItems),
     })
 }
 
 export async function getCartItemsApi(
-    tableQr:string
+    tableQr:string,
+    deviceToken : string | null
 ){
     return fetch(`${API_URL}/customer/tables/${tableQr}/shared-cart/${localStorage.getItem('diningSessionToken')}`,{
         method:'GET',
         credentials: 'include',
         headers : {
             "Accept" : 'application/json',
-            "Content-Type" : 'application/json'
+            "Content-Type" : 'application/json',
+            'X-DEVICE-TOKEN': deviceToken ?? "",
         }
     })
 }

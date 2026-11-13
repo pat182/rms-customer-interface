@@ -172,6 +172,8 @@ export default function OrdersPage() {
   const [editRequest, setEditRequest] = useState("");
   const [swipeStartX, setSwipeStartX] = useState<number | null>(null);
 
+
+
   const total = items.reduce(
     (sum, item) => sum + item.unitPrice * item.quantity,
     0,
@@ -182,9 +184,10 @@ export default function OrdersPage() {
       setActionError("A table QR code is required to update your orders.");
       return false;
     }
+    const deviceToken = localStorage.getItem("deviceToken");
 
     try {
-      const response = await addItemToCartApi(updatedItems,tableQr);
+      const response = await addItemToCartApi(updatedItems,tableQr,deviceToken);
 
       if (!response.ok) {
         throw new Error(`Unable to update cart (${response.status}).`);
@@ -341,10 +344,13 @@ export default function OrdersPage() {
 
     async function loadOrders() {
       try {
-        const response = await getCartItemsApi(tqr);
+        const response = await getCartItemsApi(tqr,localStorage.getItem("deviceToken"));
         
         if (!response.ok) {
-          throw new Error(`Unable to load your orders (${response.status}).`);
+          const errorData = await response.json();
+          throw new Error(
+            errorData.detail || `Unable to load your orders (${response.status}).`
+          );
         }
 
         const result: unknown = await response.json();

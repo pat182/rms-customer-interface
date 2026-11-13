@@ -110,17 +110,17 @@ export default function MenuPage() {
           return;
         }
 
-
+        
 
         const joinResponse = await requestToJoin(tableQr, deviceToken,existingSessionToken);
 
         if (!joinResponse.ok) {
           throw new Error("Unable to request access to the dining session.");
         }
-
+        
         const joinResult = await joinResponse.json();
         const requestToken = joinResult.data.request_token;
-        
+        console.log(joinResult.data);
         if (cancelled) return;
 
         setJoinStatus("pending");

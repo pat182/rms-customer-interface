@@ -25,8 +25,7 @@ export default function ViewOrdersBar({ tableQr }: ViewOrdersBarProps) {
 
     async function updateItemCount() {
       try {
-        const response = await getCartItemsApi(tableQr);
-
+        const response = await getCartItemsApi(tableQr,localStorage.getItem("deviceToken"));
         if (!response.ok) {
           throw new Error(`Unable to load your orders (${response.status}).`);
         }

@@ -85,7 +85,8 @@ export async function approveJoinRequest(
 
 export async function itemApi(
     itemId : number,
-    tabQr: string
+    tabQr: string,
+    deviceToken: string | null,
 ) {
     return fetch(`${API_URL}/customer/tables/${encodeURIComponent(tabQr)}/item/${itemId}/${localStorage.getItem('diningSessionToken')}`, {
         method: 'GET',
@@ -93,6 +94,7 @@ export async function itemApi(
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
+            "X-DEVICE-TOKEN": deviceToken ?? "",
         },
     })
 }

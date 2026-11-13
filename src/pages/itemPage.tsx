@@ -38,9 +38,11 @@ export default function ItemPage() {
   const [cartError, setCartError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
   const itemPrice = Number(item?.price ?? 0);
-
+ 
   async function addItemToCart() {
     if (!item || !tableQr) return;
+
+     const deviceToken = localStorage.getItem("deviceToken");
 
     try {
       const storageKey = `rms-cart:${localStorage.getItem("diningSessionToken")}`;
@@ -68,13 +70,14 @@ export default function ItemPage() {
           specialRequest,
         });
       }
-
-      const response = await addItemToCartApi(cart,tableQr);
+      console.log(`BEFORE REQUEST: ${deviceToken}`)
+      const response = await addItemToCartApi(cart,tableQr,deviceToken);
       if (!response.ok) {
         throw new Error(`Unable to add item to cart (${response.status}).`);
       }
       localStorage.setItem(storageKey, JSON.stringify(cart));
       window.dispatchEvent(new Event("rms-cart-updated"));
+      
       setCartError(null);
       setAddedToCart(true);
     } catch (saveError) {
@@ -95,7 +98,8 @@ export default function ItemPage() {
           throw new Error("Invalid menu item link.");
         }
 
-        const response = await itemApi(Number(itemId), tableQr);
+        const response = await itemApi(Number(itemId), tableQr, localStorage.getItem("deviceToken"));
+        
         if (!response.ok) {
           const error = await response.json();
           throw new Error(error.detail);
