@@ -78,7 +78,7 @@ export default function MenuPage() {
         
         setLandingData(data);
         setLoading(false);
-
+        
         if (data.is_owner) {
           
           localStorage.setItem(
@@ -94,13 +94,12 @@ export default function MenuPage() {
         }
 
         localStorage.setItem("isDiningSessionOwner", "false");
-
+        
         if(data.dinning_session_token != localStorage.getItem("diningSessionToken")){
             localStorage.setItem("diningSessionToken", data.dinning_session_token)
             existingSessionToken = data.dinning_session_token;
             
         }
-        
         
         if (existingSessionToken && data.is_approved) {
           setJoinStatus("approved");
@@ -109,8 +108,6 @@ export default function MenuPage() {
 
           return;
         }
-
-        
 
         const joinResponse = await requestToJoin(tableQr, deviceToken,existingSessionToken);
 
@@ -124,7 +121,7 @@ export default function MenuPage() {
         if (cancelled) return;
 
         setJoinStatus("pending");
-
+        
         // Listen for the owner's approval/rejection.
         joinSocket = connectCustomerWebSocket(
           `join-request/${requestToken}`,

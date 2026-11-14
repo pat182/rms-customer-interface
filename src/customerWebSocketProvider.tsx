@@ -15,19 +15,37 @@ export default function CustomerWebSocketProvider() {
     );
     const [approving, setApproving] = useState(false);
 
+    
     useEffect(() => {
         if (!tableQr) return;
 
         let cartSocket: WebSocket | null = null;
         let approvalSocket: WebSocket | null = null;
+        let activeSessionToken: string | null = null;
+        
+
 
         function connectSocket() {
-            
             const sessionToken = localStorage.getItem("diningSessionToken");
-
+            let isOwner =  localStorage.getItem("isDiningSessionOwner")
             if (!sessionToken) {
-                console.log("Waiting for dining session token...");
                 return;
+            }
+
+            // Reconnect when the dining session changes.
+            if (activeSessionToken !== sessionToken) {
+                cartSocket?.close();
+                approvalSocket?.close();
+
+                cartSocket = null;
+                approvalSocket = null;
+                localStorage.removeItem(`rms-cart:${sessionToken}`);
+                activeSessionToken = sessionToken;
+                isOwner = localStorage.getItem("isDiningSessionOwner");
+
+                setJoinRequestToken(null);
+
+                console.log("Dining session changed:", sessionToken);
             }
 
             // Shared cart connection
@@ -50,18 +68,18 @@ export default function CustomerWebSocketProvider() {
                     },
                 );
             }
-
-            // Dining session approval connection
+            
+            // Dining session / approval connection
             if (
-                !approvalSocket ||
-                (approvalSocket.readyState !== WebSocket.CONNECTING &&
-                    approvalSocket.readyState !== WebSocket.OPEN)
+                isOwner && (
+                    !approvalSocket
+                    || (approvalSocket.readyState !== WebSocket.CONNECTING &&
+                    approvalSocket.readyState !== WebSocket.OPEN && localStorage.getItem("isDiningSessionOwner"))
+                )
             ) {
                 approvalSocket = connectCustomerWebSocket(
                     `dining-session/${sessionToken}`,
                     (data) => {
-                        console.log("Dining session event:", data);
-
                         if (data.event === "join_request") {
                             const requestToken = data.data?.request_token;
 
@@ -88,6 +106,7 @@ export default function CustomerWebSocketProvider() {
             approvalSocket?.close();
         };
     }, [tableQr]);
+
 
     async function handleJoinRequestDecision(approved: boolean) {
         if (!tableQr || !joinRequestToken) return;
