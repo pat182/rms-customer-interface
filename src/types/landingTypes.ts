@@ -18,6 +18,7 @@ export type LandingData = {
   is_new : boolean;
   is_owner :boolean;
   is_approved: boolean;
+  table_name: string
   menu: {
     menu_name: string;
     description: string;

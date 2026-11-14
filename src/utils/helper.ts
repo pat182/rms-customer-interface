@@ -8,3 +8,12 @@ export function getDeviceToken(): string {
 
     return deviceToken;
 }
+export function removePrefixTable(
+    tableName: string | undefined
+): string | undefined {
+    if (tableName) {
+        return tableName.replace(/^table/i, "").trim();
+    }
+
+    return tableName;
+}

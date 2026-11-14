@@ -170,7 +170,7 @@ export default function MenuPage() {
     }
 
     void fetchMenu();
-
+    
     return () => {
       cancelled = true;
       joinSocket?.close();
@@ -210,6 +210,7 @@ export default function MenuPage() {
       <GlobalHeader
         restaurantName={landingData?.restaurant_name}
         description={landingData?.menu.description}
+        tableName={landingData?.table_name}
       />
 
       <main className="mx-auto max-w-5xl px-4 py-5">
