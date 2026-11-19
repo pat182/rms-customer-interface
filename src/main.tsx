@@ -25,10 +25,7 @@ createRoot(rootElement).render(
             <CustomerWebSocketProvider />
 
             <Routes>
-                <Route
-                    path="/"
-                    element={<FourOFourScreen />}
-                />
+                
 
                 <Route
                     path="/:tableQr/orders"
@@ -55,6 +52,10 @@ createRoot(rootElement).render(
                             <MenuPage />
                         </RestaurantStatusGuard>
                     }
+                />
+                <Route
+                    path="*"
+                    element={<FourOFourScreen />}
                 />
             </Routes>
         </BrowserRouter>
