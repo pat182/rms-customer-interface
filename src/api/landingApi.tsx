@@ -14,6 +14,18 @@ export async function getLandingData(tabQr: string, deviceToken: string, seshTok
 }
 
 
+export async function getRestoStatus(tabQr: string) {
+
+    return fetch(`${API_URL}/customer/tables/${encodeURIComponent(tabQr)}/status`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        },
+    })
+}
+
 export async function requestToJoin(
     tabQr: string,
     deviceToken: string,

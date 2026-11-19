@@ -1,29 +1,62 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './assets/css/index.css'
-// import App from './App.tsx'
-import MenuPage from './pages/menuPage.tsx'
-import ItemPage from './pages/itemPage.tsx'
-import OrdersPage from './pages/ordersPage.tsx'
-import CustomerWebSocketProvider from "./customerWebSocketProvider.tsx"
+
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import "./assets/css/index.css";
+
+import MenuPage from "./pages/menuPage";
+import ItemPage from "./pages/itemPage";
+import OrdersPage from "./pages/ordersPage";
+import FourOFourScreen from "./pages/404";
+
+import CustomerWebSocketProvider from "./customerWebSocketProvider";
+import RestaurantStatusGuard from "./components/guard/restaurantStatusGuard";
 
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
-  throw new Error("Root element not found");
+    throw new Error("Root element not found");
 }
 
-
 createRoot(rootElement).render(
-  <StrictMode>
-    <BrowserRouter>
-      <CustomerWebSocketProvider />
-      <Routes>
-        <Route path="/:tableQr/orders" element={<OrdersPage />} />
-        <Route path="/:tableQr/item/:itemId" element={<ItemPage />} />
-        <Route path="/:tableQr" element={<MenuPage />} />
-      </Routes>
-    </BrowserRouter>
-  </StrictMode>,
-)
+    <StrictMode>
+        <BrowserRouter>
+            <CustomerWebSocketProvider />
+
+            <Routes>
+                <Route
+                    path="/"
+                    element={<FourOFourScreen />}
+                />
+
+                <Route
+                    path="/:tableQr/orders"
+                    element={
+                        <RestaurantStatusGuard>
+                            <OrdersPage />
+                        </RestaurantStatusGuard>
+                    }
+                />
+
+                <Route
+                    path="/:tableQr/item/:itemId"
+                    element={
+                        <RestaurantStatusGuard>
+                            <ItemPage />
+                        </RestaurantStatusGuard>
+                    }
+                />
+
+                <Route
+                    path="/:tableQr"
+                    element={
+                        <RestaurantStatusGuard>
+                            <MenuPage />
+                        </RestaurantStatusGuard>
+                    }
+                />
+            </Routes>
+        </BrowserRouter>
+    </StrictMode>,
+);
