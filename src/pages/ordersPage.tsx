@@ -309,7 +309,7 @@ export default function OrdersPage() {
     setOrderSuccess(null);
 
     try {
-      const response = await cancelCustomerOrder(tableQr, orderId,localStorage.getItem("deviveceToken"));
+      const response = await cancelCustomerOrder(tableQr, orderId,localStorage.getItem("deviceToken"));
 
       if (!response.ok) {
         throw new Error(`Unable to cancel your order (${response.status}).`);
@@ -541,7 +541,7 @@ export default function OrdersPage() {
                       </summary>
 
                       <div className="border-t border-dashed border-orange-200 px-5 py-4">
-                        {["canceled", "cancelled"].includes(
+                        {["canceled"].includes(
                           order.status.trim().toLowerCase(),
                         ) &&
                           order.cancel_reason && (
@@ -683,7 +683,7 @@ export default function OrdersPage() {
                                 onChange={(event) =>
                                   setEditQuantity(
                                     event.target.value === ""
-                                      ? 0
+                                      ? 1
                                       : Number(event.target.value),
                                   )
                                 }
